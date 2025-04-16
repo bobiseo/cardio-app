@@ -6,15 +6,15 @@ import pandas as pd
 import numpy as np
 import joblib
 
+
 st.set_page_config(page_title="Cardio Risk Prediction", layout="centered")
-
 st.title("🫀 Cardiovascular Disease Risk Prediction")
-st.caption("This app uses a Gradient Boosting model to estimate cardiovascular disease risk.")
+st.caption("Enter patient details to estimate cardiovascular disease risk.")
 
-# --- Load model & scaler ---
-model, scaler = joblib.load("saved_models/model_gradient_boosting.pkl")
 
-# --- User Input ---
+model = joblib.load("saved_models/model_gradient_boosting.pkl")
+scaler = joblib.load("saved_models/scaler.pkl")
+
 st.subheader("📝 Patient Information")
 
 age = st.slider("Age (in years)", 18, 100, 50)
@@ -29,7 +29,7 @@ smoke = st.checkbox("Do you smoke?")
 alco = st.checkbox("Do you drink alcohol?")
 active = st.checkbox("Are you physically active?")
 
-# --- Prepare Input Data ---
+
 input_data = pd.DataFrame({
     'age': [age],
     'gender': [1 if gender == "Male" else 2],
@@ -44,8 +44,10 @@ input_data = pd.DataFrame({
     'active': [int(active)]
 })
 
+
 input_data['bmi'] = input_data['weight'] / ((input_data['height'] / 100) ** 2)
 input_data.drop(['height', 'weight'], axis=1, inplace=True)
+
 
 input_data = input_data[[
     'age', 'gender', 'ap_hi', 'ap_lo',
@@ -53,12 +55,12 @@ input_data = input_data[[
     'alco', 'active', 'bmi'
 ]]
 
-# --- Prediction ---
+
 input_scaled = scaler.transform(input_data)
 prediction = model.predict(input_scaled)[0]
 probability = model.predict_proba(input_scaled)[0][1]
 
-# --- Result ---
+
 st.subheader("🧪 Prediction Result")
 st.metric(label="Predicted Risk Probability", value=f"{probability:.2f}")
 
